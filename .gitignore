@@ -1,0 +1,32 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+
+# Runtime and generated files
+runtime/
+output/
+tmp/
+startup.log
+*.log
+
+# Portable distributions and archives
+词小灶_Windows便携版/
+*.zip
+*.rar
+*.7z
+
+# Local notes and editor files
+codex对话记录.md
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

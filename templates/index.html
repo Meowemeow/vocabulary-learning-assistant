@@ -1,0 +1,1747 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>词小灶</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --bg: #f3f6fb;
+      --card: #ffffff;
+      --text: #172033;
+      --muted: #667085;
+      --line: #d9e1ee;
+      --success: #087443;
+      --danger: #b42318;
+      --shadow: 0 8px 24px rgba(30, 64, 175, .08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background: var(--bg);
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+    }
+    .page { max-width: 1180px; margin: 0 auto; padding: 28px 18px 48px; }
+    header { margin-bottom: 20px; }
+    h1 { margin: 0 0 8px; font-size: 30px; letter-spacing: .5px; }
+    h2 { margin: 0 0 14px; font-size: 20px; }
+    h3 { margin: 0 0 10px; font-size: 16px; }
+    p { line-height: 1.7; }
+    .subtitle { color: var(--muted); margin: 0; }
+    .card {
+      background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+      padding: 20px; margin-bottom: 18px; box-shadow: var(--shadow);
+    }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .feature-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+    .feature-card { display: flex; flex-direction: column; min-height: 300px; cursor: pointer; transition: border-color .18s, box-shadow .18s, transform .18s; }
+    .feature-card:hover { transform: translateY(-2px); }
+    .feature-card.active { border: 2px solid var(--primary); box-shadow: 0 10px 28px rgba(37, 99, 235, .16); }
+    .module-state-row { margin-top: 12px; }
+    .module-state-head { display: flex; justify-content: space-between; gap: 8px; align-items: center; margin-bottom: 6px; color: var(--muted); font-size: 12px; }
+    .module-state-badge { padding: 3px 8px; border-radius: 999px; background: #eef2f6; color: #475467; font-weight: 700; }
+    .module-state-badge.generating { background: #dbeafe; color: #1d4ed8; }
+    .module-state-badge.done { background: #dcfce7; color: #166534; }
+    .module-state-badge.error { background: #fee2e2; color: #b42318; }
+    .module-mini-track { height: 6px; overflow: hidden; border-radius: 999px; background: #e5e7eb; }
+    .module-mini-bar { width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #2563eb, #7c3aed); transition: width .35s ease; }
+    textarea, input {
+      width: 100%; border: 1px solid #cbd5e1; border-radius: 9px; padding: 11px 12px;
+      font: inherit; color: var(--text); background: #fff; outline: none;
+    }
+    textarea:focus, input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, .12); }
+    textarea { resize: vertical; min-height: 180px; line-height: 1.55; }
+    .topic-input { min-height: auto; }
+    button {
+      border: 0; border-radius: 8px; padding: 10px 15px; color: white; background: var(--primary);
+      cursor: pointer; font: inherit; font-weight: 600; transition: background .15s, opacity .15s;
+    }
+    button:hover { background: var(--primary-dark); }
+    button:disabled { cursor: not-allowed; opacity: .55; }
+    button.secondary { color: #1e40af; background: #e8efff; }
+    button.secondary:hover { background: #dbe7ff; }
+    button.ghost { color: #344054; background: #eef2f6; }
+    button.danger { color: #b42318; background: #fff0ee; }
+    .actions { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 12px; }
+    .status { margin-top: 10px; color: var(--muted); font-size: 14px; min-height: 22px; }
+    .status.ok { color: var(--success); }
+    .status.error { color: var(--danger); }
+    .output-card { min-height: 160px; }
+    pre {
+      white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; padding: 15px;
+      border: 1px solid var(--line); border-radius: 9px; background: #fbfcfe;
+      font: 14px/1.7 Consolas, "Microsoft YaHei", monospace;
+    }
+    .output-empty { color: var(--muted); }
+    .label { display: block; margin: 0 0 7px; font-weight: 700; font-size: 14px; }
+    .hint { color: var(--muted); font-size: 13px; margin: 7px 0 0; }
+    .feature-description { color: var(--muted); line-height: 1.6; min-height: 52px; margin: 0 0 14px; font-size: 14px; }
+    .feature-card .actions { margin-top: auto; }
+    .weak-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .weak-item { display: inline-flex; align-items: center; gap: 7px; padding: 7px 10px; border-radius: 999px; background: #edf4ff; color: #1e40af; font-size: 14px; }
+    .weak-item button { padding: 0; width: 20px; height: 20px; border-radius: 50%; background: transparent; color: #1e40af; font-size: 16px; line-height: 18px; }
+    .weak-item button:hover { background: #dbe7ff; }
+    .split-output { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .small-title { margin: 0 0 8px; font-size: 15px; }
+    .roots-result { margin-top: 4px; }
+    .roots-result h2 { margin: 0; font-size: 24px; }
+    .roots-section { margin-top: 26px; }
+    .roots-section-title { display: flex; align-items: center; gap: 9px; margin-bottom: 14px; }
+    .roots-section-title h3 { margin: 0; font-size: 19px; }
+    .count-badge { padding: 3px 9px; border-radius: 999px; background: #e8efff; color: #1e40af; font-size: 12px; font-weight: 700; }
+    .roots-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(285px, 1fr)); gap: 15px; }
+    .root-family-card, .confusion-card { border-radius: 13px; padding: 16px; background: #fff; box-shadow: 0 5px 16px rgba(15, 23, 42, .06); }
+    .root-family-card { border: 1px solid #bfdbfe; border-top: 4px solid #3b82f6; }
+    .root-card-title { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; margin-bottom: 5px; }
+    .root-card-title strong { color: #1d4ed8; font-size: 20px; }
+    .root-meaning { margin: 0 0 12px; color: var(--muted); font-size: 13px; }
+    .family-word { padding: 10px 0; border-top: 1px solid #e8eef7; }
+    .family-word:first-of-type { border-top: 0; }
+    .word-heading { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+    .word-heading strong { font-size: 16px; }
+    .pos { color: #7c3aed; font-size: 12px; font-weight: 700; }
+    .word-meaning { margin: 4px 0 2px; line-height: 1.5; }
+    .word-relation { color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .confusion-card { border: 1px solid #fed7aa; border-top: 4px solid #f59e0b; background: #fffdf8; }
+    .confusion-card h4 { margin: 0 0 10px; color: #9a3412; font-size: 17px; }
+    .confusion-card p { margin: 7px 0; font-size: 14px; line-height: 1.6; }
+    .other-words { display: flex; flex-wrap: wrap; gap: 10px; }
+    .other-word { min-width: 185px; flex: 1 1 210px; padding: 11px 13px; border: 1px solid #d9e1ee; border-radius: 10px; background: #f8fafc; }
+    .other-word strong { margin-right: 6px; }
+    .other-word div { margin-top: 4px; color: var(--muted); font-size: 13px; }
+    .roots-loading { padding: 28px; text-align: center; border: 1px dashed #93c5fd; border-radius: 12px; background: #eff6ff; color: #1d4ed8; }
+    .roots-actions { margin-top: 16px; }
+    .fill-result h2 { margin: 0; font-size: 24px; }
+    .exercise-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 16px; }
+    .exercise-card { border: 1px solid #bbf7d0; border-top: 4px solid #16a34a; border-radius: 13px; padding: 18px; background: #fbfffc; box-shadow: 0 5px 16px rgba(15, 23, 42, .06); }
+    .exercise-card.grammar-card { border-color: #c4b5fd; border-top-color: #7c3aed; background: #fdfbff; margin-top: 16px; }
+    .exercise-card h3 { margin: 0 0 12px; color: #166534; font-size: 18px; }
+    .exercise-card.grammar-card h3 { color: #6d28d9; }
+    .passage { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font: 15px/1.9 "Microsoft YaHei", "PingFang SC", Arial, sans-serif; }
+    .answer-section { margin-top: 26px; padding-top: 22px; border-top: 2px dashed #d9e1ee; }
+    .answer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(285px, 1fr)); gap: 15px; margin-top: 14px; }
+    .answer-card { border: 1px solid #fde68a; border-top: 4px solid #eab308; border-radius: 13px; padding: 16px; background: #fffdf2; }
+    .answer-card h4 { margin: 0 0 10px; color: #854d0e; font-size: 17px; }
+    .answer-item { padding: 8px 0; border-top: 1px solid #fef3c7; line-height: 1.55; }
+    .answer-item:first-of-type { border-top: 0; }
+    .answer-number { display: inline-block; min-width: 28px; color: #92400e; font-weight: 700; }
+    .answer-explanation { display: block; margin: 3px 0 0 28px; color: var(--muted); font-size: 12px; }
+    .answer-kind { display: block; margin: 3px 0 0 28px; color: #7c3aed; font-size: 12px; font-weight: 700; }
+    .fill-actions { margin-top: 16px; }
+    .reinforce-result h2 { margin: 0; font-size: 28px; color: #1e3a8a; }
+    .word-hero { padding: 20px; border-radius: 14px; background: linear-gradient(135deg, #eff6ff, #f5f3ff); border: 1px solid #c7d2fe; }
+    .word-meta { display: flex; gap: 9px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+    .phonetic { color: #475569; font-family: Arial, sans-serif; }
+    .meaning-main { margin: 10px 0 0; font-size: 16px; line-height: 1.6; }
+    .example-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 15px; margin-top: 14px; }
+    .example-card { padding: 16px; border: 1px solid #bfdbfe; border-top: 4px solid #2563eb; border-radius: 13px; background: #fbfdff; }
+    .example-card:nth-child(2) { border-color: #c4b5fd; border-top-color: #7c3aed; background: #fdfbff; }
+    .example-card:nth-child(3) { border-color: #fbcfe8; border-top-color: #db2777; background: #fffafd; }
+    .example-card h4 { margin: 0 0 10px; color: #1e40af; font-size: 16px; }
+    .example-card:nth-child(2) h4 { color: #6d28d9; }
+    .example-card:nth-child(3) h4 { color: #be185d; }
+    .example-en { margin: 0 0 7px; font: 15px/1.7 Georgia, "Times New Roman", serif; }
+    .example-zh { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .reinforce-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 16px; margin-top: 14px; }
+    .study-card { padding: 17px; border: 1px solid #d9e1ee; border-radius: 13px; background: #fff; }
+    .study-card h4 { margin: 0 0 11px; font-size: 17px; }
+    .collocation-list { display: grid; gap: 8px; }
+    .collocation-item { display: flex; justify-content: space-between; gap: 12px; padding: 9px 11px; border-radius: 9px; background: #f8fafc; }
+    .collocation-item strong { color: #1d4ed8; }
+    .collocation-item span { color: var(--muted); text-align: right; }
+    .memory-card { border-color: #bbf7d0; background: #f7fff9; }
+    .memory-method { display: inline-block; margin-bottom: 9px; padding: 4px 9px; border-radius: 999px; background: #dcfce7; color: #166534; font-size: 12px; font-weight: 700; }
+    .memory-tip { margin: 0; line-height: 1.7; }
+    .exam-tip { margin-top: 14px; padding: 12px 14px; border-left: 4px solid #f59e0b; border-radius: 8px; background: #fffbeb; line-height: 1.6; }
+    .reinforce-actions { margin-top: 16px; }
+    .progress-panel { padding: 24px; border: 1px solid #bfdbfe; border-radius: 13px; background: #f8fbff; }
+    .progress-heading { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 12px; }
+    .progress-label { color: #1e40af; font-weight: 700; }
+    .progress-percent { color: #2563eb; font-size: 14px; font-weight: 700; }
+    .progress-track { height: 14px; overflow: hidden; border-radius: 999px; background: #dbeafe; box-shadow: inset 0 1px 3px rgba(30, 64, 175, .12); }
+    .progress-bar { width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #2563eb, #7c3aed); transition: width .35s ease; }
+    .progress-hint { margin: 10px 0 0; color: var(--muted); font-size: 12px; }
+    .unit-word-section { margin: 18px 0 4px; padding: 14px; border: 1px solid #dbeafe; border-radius: 12px; background: #f8fbff; }
+    .unit-word-section h3 { margin: 0 0 10px; color: #1e40af; font-size: 16px; }
+    .unit-word-list { display: flex; flex-wrap: wrap; gap: 8px; }
+    .word-chip, .clickable-word { cursor: pointer; }
+    .word-chip { border: 1px solid #bfdbfe; border-radius: 999px; padding: 6px 10px; color: #1d4ed8; background: #eff6ff; font-size: 13px; font-weight: 700; }
+    .word-chip:hover { color: #fff; background: #2563eb; }
+    .word-chip.ready { border-color: #86efac; color: #166534; background: #dcfce7; }
+    .word-chip.ready::after { content: " ✓"; }
+    .clickable-word.ready { color: #15803d; text-decoration-color: #22c55e; }
+    .batch-tools { margin-top: 14px; padding: 13px; border: 1px solid #dbeafe; border-radius: 11px; background: #f8fbff; }
+    .batch-tools .actions { margin-top: 0; }
+    .batch-progress { margin-top: 10px; }
+    .batch-progress-text { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 6px; color: var(--muted); font-size: 12px; }
+    .clickable-word { color: #1d4ed8; text-decoration: underline dotted; text-underline-offset: 3px; }
+    .word-panel { position: fixed; top: 18px; right: 18px; z-index: 50; width: min(420px, calc(100vw - 28px)); max-height: calc(100vh - 36px); overflow-y: auto; padding: 18px; border: 1px solid #bfdbfe; border-radius: 16px; background: #fff; box-shadow: 0 20px 55px rgba(15, 23, 42, .24); }
+    .word-panel-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; position: sticky; top: -18px; z-index: 2; margin: -18px -18px 14px; padding: 15px 18px; border-bottom: 1px solid #e5e7eb; background: rgba(255,255,255,.97); }
+    .word-panel-head h3 { margin: 0; color: #1e3a8a; font-size: 19px; }
+    .word-panel-close { width: 32px; height: 32px; padding: 0; border-radius: 50%; color: #475569; background: #eef2f6; font-size: 20px; }
+    .word-panel .word-hero { padding: 15px; }
+    .word-panel .word-hero h2 { font-size: 24px; }
+    .word-panel .example-grid, .word-panel .reinforce-grid { grid-template-columns: 1fr; }
+    .word-panel .roots-section { margin-top: 20px; }
+    .word-panel-progress { margin-bottom: 12px; padding: 16px; border: 1px solid #bfdbfe; border-radius: 12px; background: #f8fbff; }
+    .assistant-panel { position: fixed; left: 10px; top: 104px; z-index: 40; width: 224px; min-height: 430px; max-height: 76vh; overflow: hidden; resize: both; padding: 13px; border: 1px solid #c7d2fe; border-radius: 15px; background: rgba(255,255,255,.97); box-shadow: 0 16px 42px rgba(30,64,175,.18); backdrop-filter: blur(12px); }
+    .assistant-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: -13px -13px 11px; padding: 12px 13px; border-bottom: 1px solid #e0e7ff; cursor: grab; user-select: none; }
+    .assistant-head:active { cursor: grabbing; }
+    .assistant-title { display: flex; align-items: center; gap: 8px; color: #312e81; font-weight: 800; }
+    .assistant-icon { display: grid; place-items: center; width: 27px; height: 27px; border-radius: 9px; color: #fff; background: linear-gradient(135deg,#3157d5,#7c3aed); font-size: 13px; }
+    .assistant-badge { padding: 3px 7px; border-radius: 999px; color: #6d28d9; background: #f3e8ff; font-size: 10px; font-weight: 800; }
+    .assistant-collapse-btn { width: 25px; min-height: 25px; padding: 0; border-radius: 7px; color: #475569; background: #eef2ff; box-shadow: none; font-size: 17px; line-height: 1; }
+    .assistant-collapse-btn:hover { color: #1d4ed8; background: #dbeafe; }
+    .assistant-input { min-height: 64px; margin: 0; resize: vertical; font-size: 13px; line-height: 1.5; }
+    .assistant-actions { display: flex; justify-content: flex-end; margin-top: 9px; }
+    .assistant-send { min-height: 34px; padding: 7px 13px; color: #fff; background: linear-gradient(135deg,#3157d5,#6d28d9); font-size: 13px; }
+    .assistant-status { min-height: 18px; margin-top: 7px; color: #64748b; font-size: 11px; }
+    .assistant-answer { min-height: 44px; max-height: 300px; overflow-y: auto; margin-top: 8px; padding: 10px; border-radius: 10px; color: #334155; background: #f8fafc; font-size: 13px; line-height: 1.65; }
+    .assistant-answer p { margin: 0 0 8px; }
+    .assistant-answer p:last-child { margin-bottom: 0; }
+    .assistant-answer h4 { margin: 0 0 7px; color: #312e81; font-size: 13px; }
+    .assistant-answer .answer-list-item { margin: 4px 0; padding-left: 8px; }
+    .assistant-answer .answer-number-item { margin: 5px 0; }
+    .assistant-panel.collapsed { width: 52px !important; height: 52px !important; min-height: 52px; max-height: 52px; padding: 0; resize: none; overflow: visible; }
+    .assistant-panel.collapsed .assistant-head { width: 52px; height: 52px; margin: 0; padding: 0; border: 0; justify-content: center; border-radius: 15px; cursor: pointer; }
+    .assistant-panel.collapsed .assistant-title span:not(.assistant-icon), .assistant-panel.collapsed .assistant-badge { display: none; }
+    .assistant-panel.collapsed .assistant-icon { width: 34px; height: 34px; border-radius: 11px; font-size: 12px; }
+    .assistant-panel.collapsed .assistant-collapse-btn { position: absolute; right: -5px; top: -5px; display: grid; place-items: center; width: 20px; min-height: 20px; padding: 0; border-radius: 50%; color: #fff; background: #3157d5; font-size: 13px; }
+    .assistant-content { display: block; }
+    .assistant-panel.collapsed .assistant-content { display: none; }
+    @media (max-width: 1100px) { .assistant-panel { position: static; width: auto; min-height: 0; max-height: none; resize: none; margin: 0 0 18px; } .assistant-panel.collapsed { width: 52px !important; height: 52px !important; margin-left: 0; } }
+
+    @media (max-width: 700px) { .word-panel { top: 8px; right: 8px; width: calc(100vw - 16px); max-height: calc(100vh - 16px); } }
+    /* Competition-ready visual polish */
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 8% 0%, rgba(59, 130, 246, .10), transparent 30%),
+        radial-gradient(circle at 92% 10%, rgba(124, 58, 237, .08), transparent 28%),
+        #f4f7fc;
+    }
+    .page { max-width: 1280px; padding: 30px 22px 56px; }
+    .hero-header {
+      position: relative; overflow: hidden; display: flex; justify-content: space-between; gap: 28px;
+      align-items: center; margin-bottom: 22px; padding: 27px 30px; border: 1px solid rgba(255,255,255,.7);
+      border-radius: 22px; color: #fff; background: linear-gradient(128deg, #172554 0%, #2949b8 58%, #6d28d9 100%);
+      box-shadow: 0 20px 45px rgba(30, 64, 175, .22);
+    }
+    .hero-header::after {
+      content: ""; position: absolute; width: 260px; height: 260px; right: -85px; top: -130px;
+      border: 44px solid rgba(255,255,255,.08); border-radius: 50%;
+    }
+    .hero-brand { position: relative; z-index: 1; display: flex; gap: 18px; align-items: center; }
+    .brand-mark {
+      display: grid; place-items: center; flex: 0 0 auto; width: 62px; height: 62px; border-radius: 18px;
+      color: #fff; background: linear-gradient(145deg, rgba(255,255,255,.28), rgba(255,255,255,.08));
+      border: 1px solid rgba(255,255,255,.35); font: 800 30px/1 Georgia, serif; box-shadow: inset 0 1px rgba(255,255,255,.35);
+    }
+    .eyebrow { margin-bottom: 5px; color: #bfdbfe; font-size: 11px; font-weight: 800; letter-spacing: 2.2px; }
+    .hero-header h1 { margin: 0; color: #fff; font-size: 34px; }
+    .hero-header .subtitle { margin-top: 6px; color: rgba(255,255,255,.82); font-size: 15px; }
+    .creator { margin: 6px 0 0; color: #ddd6fe; font-size: 12px; }
+    .hero-stats { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(3, minmax(100px, 1fr)); gap: 10px; }
+    .stat-card { min-width: 108px; padding: 13px 15px; border: 1px solid rgba(255,255,255,.22); border-radius: 14px; background: rgba(255,255,255,.10); backdrop-filter: blur(10px); }
+    .stat-value { display: block; color: #fff; font-size: 25px; font-weight: 800; line-height: 1.1; }
+    .stat-label { display: block; margin-top: 5px; color: rgba(255,255,255,.72); font-size: 11px; }
+    .card { border-color: rgba(203, 213, 225, .76); border-radius: 18px; box-shadow: 0 10px 30px rgba(30, 64, 175, .07); }
+    .import-card, .workspace-card, .weak-card { padding: 23px; }
+    .section-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 18px; }
+    .section-heading h2 { margin: 3px 0 0; color: #172554; font-size: 22px; }
+    .section-kicker { color: #3157d5; font-size: 11px; font-weight: 800; letter-spacing: 1.5px; }
+    .section-note { padding: 6px 10px; border-radius: 999px; color: #475569; background: #f1f5f9; font-size: 12px; }
+    .live-pill { padding: 6px 10px; border: 1px solid #ddd6fe; border-radius: 999px; color: #6d28d9; background: #f5f3ff; font-size: 11px; font-weight: 800; letter-spacing: .7px; }
+    .modules-heading { margin: 28px 2px 14px; }
+    .feature-grid { align-items: stretch; }
+    .feature-card { position: relative; min-height: 270px; padding: 22px; border-radius: 18px; }
+    .feature-card::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 5px; border-radius: 18px 0 0 18px; background: #3157d5; opacity: 0; transition: opacity .18s; }
+    .feature-card:nth-child(2)::before { background: #7c3aed; }
+    .feature-card.active::before { opacity: 1; }
+    .feature-card h2 { align-self: flex-start; margin-bottom: 13px; padding: 5px 10px; border-radius: 999px; color: #1d4ed8; background: #eaf1ff; font-size: 12px; }
+    .feature-card:nth-child(2) h2 { color: #6d28d9; background: #f3e8ff; }
+    .feature-card h3 { color: #172554; font-size: 20px; }
+    .feature-description { color: #64748b; }
+    textarea, input { border-color: #d8e1ee; background: #fbfdff; }
+    textarea { min-height: 205px; }
+    button { min-height: 40px; box-shadow: 0 5px 12px rgba(37, 99, 235, .14); }
+    button:hover { transform: translateY(-1px); }
+    button.ghost, button.secondary, button.danger, .word-chip, .word-panel-close { box-shadow: none; }
+    .batch-tools { background: linear-gradient(135deg, #f7f8ff, #f5f3ff); border-color: #ddd6fe; }
+    #generateAllReinforceBtn { color: #5b21b6; background: #ede9fe; }
+    #generateAllReinforceBtn:hover { color: #fff; background: #7c3aed; }
+    .workspace-card { min-height: 330px; }
+    .progress-panel { padding: 28px; background: linear-gradient(145deg, #f8fbff, #f7f5ff); }
+    .progress-track { height: 12px; }
+    .root-family-card, .confusion-card, .exercise-card, .answer-card, .study-card, .example-card { transition: transform .18s, box-shadow .18s, border-color .18s; }
+    .root-family-card:hover, .confusion-card:hover, .exercise-card:hover, .study-card:hover, .example-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(15, 23, 42, .10); }
+    .unit-word-section { background: linear-gradient(135deg, #f8fbff, #f7f5ff); }
+    .word-chip { min-height: 32px; }
+    .word-panel { border: 1px solid rgba(191, 219, 254, .9); box-shadow: -12px 0 50px rgba(15, 23, 42, .24); animation: drawerIn .22s ease-out; }
+    @keyframes drawerIn { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }
+    .weak-card { background: linear-gradient(180deg, #fff, #fbfdff); }
+    .weak-point-meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+    .weak-point-count { padding: 5px 9px; border-radius: 999px; color: #1d4ed8; background: #eff6ff; font-size: 12px; font-weight: 700; }
+    .qa-records { display: grid; gap: 8px; margin-top: 12px; }
+    .qa-record { padding: 10px 12px; border: 1px solid #ddd6fe; border-radius: 10px; background: #faf9ff; color: #475569; font-size: 12px; line-height: 1.55; }
+    .qa-record-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px; color: #4338ca; }
+    .qa-delete-btn { min-height: 24px; padding: 3px 8px; color: #b42318; background: #fff1f2; box-shadow: none; font-size: 11px; }
+    .qa-record strong { color: #4338ca; }
+    .pdf-main-btn { color: #fff; background: linear-gradient(135deg, #3157d5, #7c3aed); }
+    .pdf-main-btn:hover { background: linear-gradient(135deg, #2447bd, #6d28d9); }
+    .weak-list { min-height: 48px; padding: 12px; border: 1px dashed #cbd5e1; border-radius: 12px; background: #f8fafc; }
+    .weak-item { border: 1px solid #bfdbfe; }
+    footer { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px 18px; padding: 18px; border-top: 1px solid #dbe4f0; }
+    footer strong { color: #3157d5; }
+    footer span { color: #64748b; }
+    @media (max-width: 920px) {
+      .hero-header { align-items: flex-start; flex-direction: column; }
+      .hero-stats { width: 100%; }
+      .stat-card { min-width: 0; }
+    }
+    @media (max-width: 600px) {
+      .page { padding: 15px 12px 40px; }
+      .hero-header { padding: 22px 18px; border-radius: 17px; }
+      .brand-mark { width: 52px; height: 52px; }
+      .hero-header h1 { font-size: 27px; }
+      .hero-stats { grid-template-columns: 1fr; }
+      .stat-card { display: flex; justify-content: space-between; align-items: center; }
+      .stat-label { margin-top: 0; }
+      .section-heading { flex-direction: column; margin-bottom: 14px; }
+      .section-note { align-self: flex-start; }
+    }
+    .hidden { display: none !important; }
+    footer { color: var(--muted); text-align: center; font-size: 13px; margin-top: 18px; }
+    @media (max-width: 850px) {
+      .grid, .feature-grid, .split-output, .exercise-grid, .example-grid, .reinforce-grid { grid-template-columns: 1fr; }
+      .feature-card { min-height: auto; }
+      .feature-description { min-height: auto; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="hero-header">
+      <div class="hero-brand">
+        <div class="brand-mark">V</div>
+        <div>
+          <div class="eyebrow">AI VOCABULARY STUDIO</div>
+          <h1>词小灶</h1>
+          <p class="subtitle">江苏高三英语单元词汇智能教学工作台</p>
+          <p class="creator">made by 昆山市高级中学 申珅</p>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-card"><span id="statWords" class="stat-value">0</span><span class="stat-label">本单元词汇</span></div>
+        <div class="stat-card"><span id="statCached" class="stat-value">0</span><span class="stat-label">已生成强化卡</span></div>
+        <div class="stat-card"><span id="statWeak" class="stat-value">0</span><span class="stat-label">薄弱词记录</span></div>
+      </div>
+    </header>
+
+    <section class="card import-card">
+      <div class="section-heading"><div><span class="section-kicker">STEP 01</span><h2>导入本单元全部词汇</h2></div><span class="section-note">一次导入 · 全模块共享</span></div>
+      <div class="grid">
+        <div>
+          <label class="label" for="vocabulary">词汇内容</label>
+          <textarea id="vocabulary" placeholder="请粘贴本单元全部词汇，例如：&#10;1. abandon [əˈbændən] vt. 抛弃，放弃，遗弃&#10;2. ability [əˈbɪləti] n. 能力；才能"></textarea>
+          <p class="hint">支持直接粘贴带序号、音标、词性和中文释义的词汇文本。</p>
+        </div>
+        <div>
+          <label class="label">当前状态</label>
+          <div id="importStatus" class="status">尚未导入词汇。</div>
+          <div class="actions">
+            <button id="importBtn">导入词汇</button>
+            <button id="clearBtn" class="ghost">清空</button>
+          </div>
+          <div class="batch-tools">
+            <div class="actions"><button id="generateAllReinforceBtn" class="secondary" disabled>一键生成全部单词强化内容</button></div>
+            <div id="batchProgress" class="batch-progress hidden">
+              <div class="batch-progress-text"><span id="batchStatus">正在准备…</span><span id="batchPercent">0%</span></div>
+              <div class="module-mini-track"><div id="batchBar" class="module-mini-bar"></div></div>
+            </div>
+          </div>
+          <p class="hint">批量生成后，点击任意单词可立即打开强化卡片。</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-heading modules-heading"><div><span class="section-kicker">STEP 02</span><h2>选择课堂教学模块</h2></div><span class="section-note">支持并行生成与结果切换</span></div>
+    <section class="feature-grid">
+      <div class="card feature-card active" id="rootsCard" data-module="roots">
+        <h2>功能一</h2>
+        <h3>词根词族与易混词</h3>
+        <p class="feature-description">一次性整理本单元全部词汇的词根词族，并辨析江苏高考易混词。</p>
+        <div class="module-state-row"><div class="module-state-head"><span>模块状态</span><span id="rootsStateBadge" class="module-state-badge">未生成</span></div><div class="module-mini-track"><div id="rootsMiniBar" class="module-mini-bar"></div></div></div>
+        <div class="actions"><button class="feature-btn" id="rootsBtn" disabled>生成整体辨析</button></div>
+      </div>
+
+      <div class="card feature-card" id="fillCard" data-module="fill">
+        <h2>功能二</h2>
+        <h3>挖词填空</h3>
+        <p class="feature-description">输入课堂主题，生成两篇短文和语法填空。学生练习区不提供任何提示。</p>
+        <input class="topic-input" id="topic" placeholder="例如：科学技术" />
+        <div class="module-state-row"><div class="module-state-head"><span>模块状态</span><span id="fillStateBadge" class="module-state-badge">未生成</span></div><div class="module-mini-track"><div id="fillMiniBar" class="module-mini-bar"></div></div></div>
+        <div class="actions"><button class="feature-btn" id="fillBtn" disabled>生成挖词填空</button></div>
+      </div>
+
+    </section>
+
+    <section class="card workspace-card">
+      <div class="section-heading"><div><span class="section-kicker">STEP 03</span><h2>课堂教学内容</h2></div><span class="live-pill">AI WORKSPACE</span></div>
+      <div id="resultStatus" class="status"></div>
+      <div id="emptyResult" class="output-empty">请先导入词汇，再选择上方功能。</div>
+      <div id="progressPanel" class="progress-panel hidden">
+        <div class="progress-heading">
+          <span id="progressLabel" class="progress-label">正在生成内容…</span>
+          <span id="progressPercent" class="progress-percent">0%</span>
+        </div>
+        <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+        <p class="progress-hint">模型正在处理内容，请勿关闭页面。</p>
+      </div>
+      <pre id="result" class="hidden"></pre>
+      <div id="rootsResult" class="roots-result hidden"></div>
+      <div id="rootsActions" class="actions roots-actions hidden">
+        <button id="openRootsBtn" class="secondary">在新页面打开</button>
+      </div>
+      <div id="fillResult" class="fill-result hidden"></div>
+      <div id="fillActions" class="actions fill-actions hidden">
+        <button id="toggleAnswersBtn" class="secondary">显示答案</button>
+        <button id="openFillBtn" class="secondary">在新页面打开</button>
+        <button id="copyResultBtn" class="secondary">复制当前结果</button>
+      </div>
+    </section>
+
+    <section class="card weak-card">
+      <div class="section-heading"><div><span class="section-kicker">STEP 04</span><h2>课堂薄弱点</h2></div><span class="section-note">形成课后复习闭环</span></div>
+      <p class="hint">可记录薄弱词，也可记录课堂小助手中的提问与回答；薄弱词和课堂提问可分别删除或清空。</p>
+      <div class="weak-point-meta"><span id="weakPointWordCount" class="weak-point-count">薄弱词 0 个</span><span id="weakPointQACount" class="weak-point-count">课堂提问 0 条</span></div>
+      <div id="weakList" class="weak-list"><span class="hint">暂未记录薄弱词。</span></div>
+      <div id="qaRecords" class="qa-records"><span class="hint">暂未记录课堂提问。</span></div>
+      <div class="actions">
+        <button id="generatePdfBtn" class="pdf-main-btn" disabled>生成课堂薄弱点PDF</button>
+        <button id="clearWeakBtn" class="danger">清空薄弱词</button>
+        <button id="clearQABtn" class="danger" disabled>清空课堂提问</button>
+      </div>
+    </section>
+
+    <footer><strong>词小灶</strong><span>只服务于高中英语词汇教学，不回答课程无关问题。</span><span>made by 昆山市高级中学 申珅</span></footer>
+  </main>
+
+  <aside id="assistantPanel" class="assistant-panel" aria-label="课堂小助手">
+    <div id="assistantDragHandle" class="assistant-head" title="拖动此处移动小窗口">
+      <div class="assistant-title"><span class="assistant-icon">AI</span><span>课堂小助手</span></div>
+      <span class="assistant-badge">简短回答</span>
+      <button id="assistantCollapseBtn" class="assistant-collapse-btn" title="缩小窗口" aria-label="缩小窗口">−</button>
+    </div>
+    <div class="assistant-content">
+      <textarea id="assistantQuestion" class="assistant-input" placeholder="输入课堂问题，例如：
+什么是定语从句？"></textarea>
+      <div class="assistant-actions"><button id="assistantSendBtn" class="assistant-send">发送问题</button></div>
+      <div id="assistantStatus" class="assistant-status">只回答高中英语和本智能体相关问题。</div>
+      <div id="assistantAnswer" class="assistant-answer hidden"></div>
+      <div class="assistant-actions"><button id="assistantRecordBtn" class="secondary hidden">加入课堂薄弱点</button></div>
+    </div>
+  </aside>
+
+  <aside id="wordPanel" class="word-panel hidden" aria-label="单词强化小窗">
+    <div class="word-panel-head">
+      <h3 id="wordPanelTitle">单词强化</h3>
+      <button id="closeWordPanelBtn" class="word-panel-close" title="关闭">×</button>
+    </div>
+    <div id="wordPanelProgress" class="word-panel-progress hidden">
+      <div class="progress-heading"><span id="wordPanelProgressLabel" class="progress-label">正在生成…</span><span id="wordPanelPercent" class="progress-percent">0%</span></div>
+      <div class="progress-track"><div id="wordPanelBar" class="progress-bar"></div></div>
+    </div>
+    <div id="wordPanelContent"></div>
+    <div id="reinforceActions" class="actions reinforce-actions hidden">
+      <button id="addWeakBtn" class="secondary">加入薄弱词清单</button>
+      <button id="openReinforceBtn" class="secondary">在新页面打开</button>
+      <button id="copyReinforceBtn" class="secondary">复制强化内容</button>
+    </div>
+  </aside>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let importedVocabulary = '';
+    let unitWords = [];
+    let currentReinforcement = null;
+    let wordPanelLoading = false;
+    let wordPanelProgress = 0;
+    let wordPanelTimer = null;
+    let assistantDragging = false;
+    let assistantDragOffsetX = 0;
+    let assistantDragOffsetY = 0;
+    let reinforcementCache = {};
+    let batchReinforceRunning = false;
+    let currentRootsData = null;
+    let currentFillData = null;
+    let progressValue = 0;
+    let progressTimer = null;
+    let activeModule = 'roots';
+    const moduleStates = {
+      roots: {status: 'idle', progress: 0, timer: null, message: '功能一尚未生成。', type: ''},
+      fill: {status: 'idle', progress: 0, timer: null, message: '功能二尚未生成。', type: ''}
+    };
+    let classroomQA = loadClassroomQA();
+    let currentAssistantQA = null;
+    let weakWords = loadWeakWords();
+
+    function updateDashboardStats() {
+      $('statWords').textContent = unitWords.length;
+      $('statCached').textContent = Object.keys(reinforcementCache).length;
+      $('statWeak').textContent = weakWords.length;
+    }
+
+    function loadWeakWords() {
+      try { return JSON.parse(localStorage.getItem('vocab-weak-words') || '[]'); }
+      catch { return []; }
+    }
+
+    function loadClassroomQA() {
+      try { return JSON.parse(localStorage.getItem('vocab-classroom-qa') || '[]'); }
+      catch { return []; }
+    }
+
+    function saveClassroomQA() {
+      localStorage.setItem('vocab-classroom-qa', JSON.stringify(classroomQA));
+      renderClassroomQA();
+      updateDashboardStats();
+    }
+
+    function renderClassroomQA() {
+      const container = $('qaRecords');
+      if (!classroomQA.length) {
+        container.innerHTML = '<span class="hint">暂未记录课堂提问。</span>';
+      } else {
+        container.innerHTML = classroomQA.map((item, index) => `
+          <div class="qa-record">
+            <div class="qa-record-head"><strong>提问 ${index + 1}</strong><button class="qa-delete-btn" data-qa-index="${index}">删除</button></div>
+            <strong>问题：</strong>${escapeHtml(item.question)}<br><strong>回答：</strong>${escapeHtml(item.answer)}
+          </div>`).join('');
+        container.querySelectorAll('[data-qa-index]').forEach(button => {
+          button.addEventListener('click', () => {
+            const index = Number(button.dataset.qaIndex);
+            if (!Number.isInteger(index)) return;
+            classroomQA.splice(index, 1);
+            saveClassroomQA();
+          });
+        });
+      }
+      $('clearQABtn').disabled = !classroomQA.length;
+      $('weakPointQACount').textContent = `课堂提问 ${classroomQA.length} 条`;
+      updatePdfButton();
+    }
+
+    function updatePdfButton() {
+      $('generatePdfBtn').disabled = !(weakWords.length || classroomQA.length);
+      $('weakPointWordCount').textContent = `薄弱词 ${weakWords.length} 个`;
+      $('weakPointQACount').textContent = `课堂提问 ${classroomQA.length} 条`;
+    }
+
+    function saveSessionState() {
+      try {
+        localStorage.setItem('vocab-session-state', JSON.stringify({
+          importedVocabulary,
+          unitWords,
+          reinforcementCache,
+          currentRootsData,
+          currentFillData,
+          moduleStates: {
+            roots: {status: moduleStates.roots.status, progress: moduleStates.roots.progress, message: moduleStates.roots.message, type: moduleStates.roots.type},
+            fill: {status: moduleStates.fill.status, progress: moduleStates.fill.progress, message: moduleStates.fill.message, type: moduleStates.fill.type}
+          }
+        }));
+      } catch (error) {
+        console.warn('课堂模块记录保存失败：', error);
+      }
+    }
+
+    function loadSessionState() {
+      try { return JSON.parse(localStorage.getItem('vocab-session-state') || 'null'); }
+      catch { return null; }
+    }
+
+    function restoreSessionState() {
+      const saved = loadSessionState();
+      if (!saved || !saved.importedVocabulary) return;
+      importedVocabulary = String(saved.importedVocabulary);
+      unitWords = Array.isArray(saved.unitWords) ? saved.unitWords : extractUnitWords(importedVocabulary);
+      reinforcementCache = saved.reinforcementCache && typeof saved.reinforcementCache === 'object' ? saved.reinforcementCache : {};
+      currentRootsData = saved.currentRootsData || null;
+      currentFillData = saved.currentFillData || null;
+      ['roots', 'fill'].forEach(name => {
+        const savedState = saved.moduleStates?.[name];
+        if (savedState) Object.assign(moduleStates[name], {
+          status: savedState.status || 'idle',
+          progress: Number(savedState.progress || 0),
+          message: savedState.message || moduleStates[name].message,
+          type: savedState.type || ''
+        });
+      });
+      $('vocabulary').value = importedVocabulary;
+      $('generateAllReinforceBtn').disabled = false;
+      $('generateAllReinforceBtn').textContent = Object.keys(reinforcementCache).length ? '重新生成全部单词强化内容' : '一键生成全部单词强化内容';
+      document.querySelectorAll('.feature-btn').forEach(btn => btn.disabled = false);
+      $('importStatus').textContent = `已恢复本单元记录（${unitWords.length}个词）。`;
+      if (currentRootsData) renderRootsResult(currentRootsData);
+      if (currentFillData) renderFillResult(currentFillData);
+      refreshWordCacheStates();
+      if (currentRootsData) moduleStates.roots.status = 'done';
+      if (currentFillData) moduleStates.fill.status = 'done';
+      Object.keys(moduleStates).forEach(updateModuleCard);
+      showModule(currentRootsData ? 'roots' : 'fill');
+    }
+
+    function saveWeakWords() {
+      localStorage.setItem('vocab-weak-words', JSON.stringify(weakWords));
+      renderWeakList();
+      updateDashboardStats();
+      updatePdfButton();
+    }
+
+    function renderWeakList() {
+      const container = $('weakList');
+      if (!weakWords.length) {
+        container.innerHTML = '<span class="hint">暂未记录薄弱词。</span>';
+        updateDashboardStats();
+        updatePdfButton();
+        return;
+      }
+      container.innerHTML = weakWords.map((item, index) => `
+        <span class="weak-item">${escapeHtml(item.word)}
+          <button title="删除" data-index="${index}">×</button>
+        </span>`).join('');
+      container.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          weakWords.splice(Number(btn.dataset.index), 1);
+          saveWeakWords();
+        });
+      });
+      updateDashboardStats();
+      updatePdfButton();
+    }
+
+    function escapeHtml(text) {
+      return String(text ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+    }
+
+    function extractUnitWords(text) {
+      const seen = new Set();
+      return String(text || '').split(/\n+/).map(line => {
+        const match = line.match(/^\s*(?:\d+[.、)]\s*)?([A-Za-z][A-Za-z'-]*)/);
+        return match ? match[1] : '';
+      }).filter(word => {
+        const key = word.toLowerCase();
+        if (!word || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    }
+
+    function unitWordChipsHtml() {
+      if (!unitWords.length) return '';
+      return `<section class="unit-word-section">
+        <h3>点击本单元单词，打开右侧强化小窗</h3>
+        <div class="unit-word-list">${unitWords.map(word => `<button type="button" class="word-chip${hasCachedReinforcement(word) ? ' ready' : ''}" data-word="${escapeHtml(word)}">${escapeHtml(word)}</button>`).join('')}</div>
+      </section>`;
+    }
+
+    function hasCachedReinforcement(word) {
+      return Boolean(reinforcementCache[String(word || '').toLowerCase()]);
+    }
+
+    function refreshWordCacheStates() {
+      document.querySelectorAll('[data-word]').forEach(element => {
+        element.classList.toggle('ready', hasCachedReinforcement(element.dataset.word));
+      });
+      updateDashboardStats();
+    }
+
+    function updateBatchProgress(value, message) {
+      const progress = Math.max(0, Math.min(100, value));
+      $('batchProgress').classList.remove('hidden');
+      $('batchBar').style.width = progress + '%';
+      $('batchPercent').textContent = Math.round(progress) + '%';
+      if (message) $('batchStatus').textContent = message;
+    }
+
+    async function generateAllReinforcements() {
+      if (!unitWords.length || batchReinforceRunning) return;
+      batchReinforceRunning = true;
+      reinforcementCache = {};
+      refreshWordCacheStates();
+      const button = $('generateAllReinforceBtn');
+      button.disabled = true;
+      button.dataset.originalText ||= button.textContent;
+      button.textContent = '后台生成中…';
+
+      const batchSize = 6;
+      const batches = [];
+      for (let index = 0; index < unitWords.length; index += batchSize) {
+        batches.push(unitWords.slice(index, index + batchSize));
+      }
+
+      let completedWords = 0;
+      try {
+        for (let index = 0; index < batches.length; index += 1) {
+          const words = batches[index];
+          let batchPart = 0;
+          updateBatchProgress(
+            completedWords / unitWords.length * 100,
+            `正在生成第 ${index + 1}/${batches.length} 批（${words.join('、')}）`
+          );
+          const jsonText = await callApi('/api/reinforce-batch', {
+            words,
+            vocabulary: importedVocabulary
+          }, chunk => {
+            batchPart = Math.min(90, batchPart + Math.max(1, String(chunk || '').length / 100));
+            const estimated = (completedWords + words.length * batchPart / 100) / unitWords.length * 100;
+            updateBatchProgress(estimated);
+          }, 300000);
+
+          let payload;
+          try {
+            payload = JSON.parse(cleanJsonText(jsonText));
+          } catch {
+            throw new Error(`第 ${index + 1} 批返回格式不正确。`);
+          }
+          const items = Array.isArray(payload.items) ? payload.items : [];
+          items.forEach((item, itemIndex) => {
+            const fallbackWord = words[itemIndex] || item?.word || '';
+            const normalized = normalizeReinforcementData(item, fallbackWord);
+            if (normalized.word) reinforcementCache[normalized.word.toLowerCase()] = normalized;
+          });
+          completedWords += words.length;
+          refreshWordCacheStates();
+          saveSessionState();
+          updateBatchProgress(completedWords / unitWords.length * 100, `已完成 ${Math.min(completedWords, unitWords.length)}/${unitWords.length} 个单词`);
+        }
+        updateBatchProgress(100, `全部完成：已缓存 ${Object.keys(reinforcementCache).length} 个单词`);
+        button.textContent = '重新生成全部强化内容';
+      } catch (error) {
+        updateBatchProgress(completedWords / unitWords.length * 100, `已缓存 ${Object.keys(reinforcementCache).length} 个；${error.message}`);
+        button.textContent = '继续生成全部强化内容';
+      } finally {
+        batchReinforceRunning = false;
+        button.disabled = false;
+      }
+    }
+
+    function cleanJsonText(text) {
+      let cleaned = String(text || '').trim()
+        .replace(/^\uFEFF/, '')
+        .replace(/^\s*\x60\x60\x60(?:json)?\s*/i, '')
+        .replace(/\s*\x60\x60\x60\s*$/, '')
+        .trim();
+      const start = cleaned.indexOf('{');
+      const end = cleaned.lastIndexOf('}');
+      if (start >= 0 && end > start) cleaned = cleaned.slice(start, end + 1);
+      return cleaned;
+    }
+
+    function normalizeRootsData(raw) {
+      const data = raw && typeof raw === 'object' ? raw : {};
+      return {
+        title: String(data.title || '本单元词根词族与易混词辨析'),
+        families: Array.isArray(data.families) ? data.families : [],
+        confusions: Array.isArray(data.confusions) ? data.confusions : [],
+        otherWords: Array.isArray(data.otherWords) ? data.otherWords : []
+      };
+    }
+
+    function rootsCardsHtml(data) {
+      const familyCards = data.families.map(family => {
+        const words = Array.isArray(family.words) ? family.words : [];
+        return `<article class="root-family-card">
+          <div class="root-card-title">
+            <strong>${escapeHtml(family.root || '词族')}</strong>
+            <span class="count-badge">${words.length}词</span>
+          </div>
+          <p class="root-meaning">核心含义：${escapeHtml(family.rootMeaning || '—')}</p>
+          ${words.map(item => `<div class="family-word">
+            <div class="word-heading"><strong class="clickable-word" data-word="${escapeHtml(item.word)}">${escapeHtml(item.word)}</strong><span class="pos">${escapeHtml(item.partOfSpeech)}</span></div>
+            <p class="word-meaning">${escapeHtml(item.meaning)}</p>
+            <div class="word-relation">${escapeHtml(item.relation)}</div>
+          </div>`).join('')}
+        </article>`;
+      }).join('');
+
+      const confusionCards = data.confusions.map(item => {
+        const words = Array.isArray(item.words) ? item.words : [];
+        return `<article class="confusion-card">
+          <h4>${words.map(escapeHtml).join(' VS ') || '易混词'}</h4>
+          <p><strong>核心辨析：</strong>${escapeHtml(item.difference)}</p>
+          <p><strong>高考提示：</strong>${escapeHtml(item.examTip)}</p>
+        </article>`;
+      }).join('');
+
+      const otherCards = data.otherWords.map(item => `<div class="other-word">
+        <strong class="clickable-word" data-word="${escapeHtml(item.word)}">${escapeHtml(item.word)}</strong><span class="pos">${escapeHtml(item.partOfSpeech)}</span>
+        <div>${escapeHtml(item.meaning)}</div>
+      </div>`).join('');
+
+      return `<div class="roots-result">
+        <h2>${escapeHtml(data.title)}</h2>
+        ${unitWordChipsHtml()}
+        <section class="roots-section">
+          <div class="roots-section-title"><h3>一、词根词族</h3><span class="count-badge">${data.families.length}组</span></div>
+          <div class="roots-grid">${familyCards || '<p class="hint">暂无可靠词族分组。</p>'}</div>
+        </section>
+        <section class="roots-section">
+          <div class="roots-section-title"><h3>二、易混词辨析</h3><span class="count-badge">${data.confusions.length}组</span></div>
+          <div class="roots-grid">${confusionCards || '<p class="hint">暂无需要重点辨析的词组。</p>'}</div>
+        </section>
+        <section class="roots-section">
+          <div class="roots-section-title"><h3>三、其他重点词</h3><span class="count-badge">${data.otherWords.length}词</span></div>
+          <div class="other-words">${otherCards || '<p class="hint">本单元词汇均已归入词族。</p>'}</div>
+        </section>
+      </div>`;
+    }
+
+    function renderRootsResult(data) {
+      currentRootsData = normalizeRootsData(data);
+      $('rootsResult').innerHTML = rootsCardsHtml(currentRootsData);
+    }
+
+    function openRootsPage(data) {
+      const page = window.open('', '_blank');
+      if (!page) throw new Error('浏览器阻止了新页面，请允许弹出窗口后重试。');
+      const safeTitle = escapeHtml(data.title);
+      page.document.open();
+      page.document.write(`<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${safeTitle}</title>
+        <style>
+          *{box-sizing:border-box}body{margin:0;background:#f3f6fb;color:#172033;font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif}.page{max-width:1180px;margin:0 auto;padding:30px 20px 50px}h2{font-size:28px;margin:0}.roots-section{margin-top:28px}.roots-section-title{display:flex;align-items:center;gap:9px;margin-bottom:14px}.roots-section-title h3{margin:0;font-size:20px}.count-badge{padding:3px 9px;border-radius:999px;background:#e8efff;color:#1e40af;font-size:12px;font-weight:700}.roots-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(285px,1fr));gap:15px}.root-family-card,.confusion-card{border-radius:13px;padding:16px;background:#fff;box-shadow:0 5px 16px rgba(15,23,42,.06)}.root-family-card{border:1px solid #bfdbfe;border-top:4px solid #3b82f6}.root-card-title{display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:5px}.root-card-title strong{color:#1d4ed8;font-size:20px}.root-meaning{margin:0 0 12px;color:#667085;font-size:13px}.family-word{padding:10px 0;border-top:1px solid #e8eef7}.family-word:first-of-type{border-top:0}.word-heading{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.word-heading strong{font-size:16px}.pos{color:#7c3aed;font-size:12px;font-weight:700}.word-meaning{margin:4px 0 2px;line-height:1.5}.word-relation{color:#667085;font-size:12px;line-height:1.45}.confusion-card{border:1px solid #fed7aa;border-top:4px solid #f59e0b;background:#fffdf8}.confusion-card h4{margin:0 0 10px;color:#9a3412;font-size:17px}.confusion-card p{margin:7px 0;font-size:14px;line-height:1.6}.other-words{display:flex;flex-wrap:wrap;gap:10px}.other-word{min-width:185px;flex:1 1 210px;padding:11px 13px;border:1px solid #d9e1ee;border-radius:10px;background:#f8fafc}.other-word strong{margin-right:6px}.other-word div{margin-top:4px;color:#667085;font-size:13px}.hint{color:#667085}@media print{body{background:#fff}.page{max-width:none;padding:10px}.root-family-card,.confusion-card{break-inside:avoid;box-shadow:none}}@media(max-width:700px){.roots-grid{grid-template-columns:1fr}}
+        </style></head><body><main class="page">${rootsCardsHtml(data)}</main></body></html>`);
+      page.document.close();
+    }
+
+    function normalizeAnswerItems(items) {
+      return Array.isArray(items) ? items.map(item => ({
+        number: String(item?.number ?? ''),
+        answer: String(item?.answer ?? ''),
+        kind: String(item?.kind ?? ''),
+        prompt: String(item?.prompt ?? ''),
+        explanation: String(item?.explanation ?? '')
+      })) : [];
+    }
+
+    function normalizeFillData(raw) {
+      const data = raw && typeof raw === 'object' ? raw : {};
+      const answers = data.answers && typeof data.answers === 'object' ? data.answers : {};
+      return {
+        title: String(data.title || '主题词汇语境训练'),
+        readings: Array.isArray(data.readings) ? data.readings.map((item, index) => ({
+          title: String(item?.title || `阅读${index + 1}`),
+          passage: String(item?.passage || '')
+        })) : [],
+        grammar: {
+          title: String(data.grammar?.title || '语法填空'),
+          passage: String(data.grammar?.passage || '')
+        },
+        answers: {
+          readings: Array.isArray(answers.readings) ? answers.readings.map((group, index) => ({
+            title: String(group?.title || `阅读${index + 1}答案`),
+            items: normalizeAnswerItems(group?.items)
+          })) : [],
+          grammar: normalizeAnswerItems(answers.grammar)
+        }
+      };
+    }
+
+    function answerItemsHtml(items) {
+      return items.map(item => `<div class="answer-item">
+        <span class="answer-number">${escapeHtml(item.number)}.</span><strong>${escapeHtml(item.answer)}</strong>
+        ${item.kind ? `<span class="answer-kind">${escapeHtml(item.kind)}${item.prompt ? ` · 提示词：${escapeHtml(item.prompt)}` : ''}</span>` : ''}
+        ${item.explanation ? `<span class="answer-explanation">${escapeHtml(item.explanation)}</span>` : ''}
+      </div>`).join('') || '<p class="hint">暂无答案。</p>';
+    }
+
+    function fillCardsHtml(data, answersHidden = true) {
+      const readingCards = data.readings.map(reading => `<article class="exercise-card">
+        <h3>${escapeHtml(reading.title)}</h3>
+        <p class="passage">${escapeHtml(reading.passage)}</p>
+      </article>`).join('');
+      const readingAnswers = data.answers.readings.map(group => `<article class="answer-card">
+        <h4>${escapeHtml(group.title)}</h4>
+        ${answerItemsHtml(group.items)}
+      </article>`).join('');
+      const grammarAnswer = `<article class="answer-card">
+        <h4>语法填空答案</h4>
+        ${answerItemsHtml(data.answers.grammar)}
+      </article>`;
+
+      return `<div class="fill-result">
+        <h2>${escapeHtml(data.title)}</h2>
+        ${unitWordChipsHtml()}
+        <section class="roots-section">
+          <div class="roots-section-title"><h3>一、阅读挖词填空</h3><span class="count-badge">${data.readings.length}篇</span></div>
+          <div class="exercise-grid">${readingCards || '<p class="hint">暂无阅读练习。</p>'}</div>
+        </section>
+        <section class="roots-section">
+          <div class="roots-section-title"><h3>二、语法填空</h3><span class="count-badge">10空</span></div>
+          <article class="exercise-card grammar-card">
+            <h3>${escapeHtml(data.grammar.title)}</h3>
+            <p class="passage">${escapeHtml(data.grammar.passage)}</p>
+          </article>
+        </section>
+        <section id="fillAnswers" class="answer-section${answersHidden ? ' hidden' : ''}">
+          <div class="roots-section-title"><h3>三、教师答案与简析</h3><span class="count-badge">答案区</span></div>
+          <div class="answer-grid">${readingAnswers}${grammarAnswer}</div>
+        </section>
+      </div>`;
+    }
+
+    function renderFillResult(data) {
+      currentFillData = normalizeFillData(data);
+      $('fillResult').innerHTML = fillCardsHtml(currentFillData, true);
+      $('toggleAnswersBtn').textContent = '显示答案';
+    }
+
+    function openFillPage(data) {
+      const page = window.open('', '_blank');
+      if (!page) throw new Error('浏览器阻止了新页面，请允许弹出窗口后重试。');
+      const safeTitle = escapeHtml(data.title);
+      page.document.open();
+      page.document.write(`<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${safeTitle}</title>
+        <style>
+          *{box-sizing:border-box}body{margin:0;background:#f3f6fb;color:#172033;font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif}.page{max-width:1180px;margin:0 auto;padding:30px 20px 50px}h2{margin:0;font-size:28px}.roots-section{margin-top:28px}.roots-section-title{display:flex;align-items:center;gap:9px;margin-bottom:14px}.roots-section-title h3{margin:0;font-size:20px}.count-badge{padding:3px 9px;border-radius:999px;background:#e8efff;color:#1e40af;font-size:12px;font-weight:700}.exercise-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}.exercise-card{border:1px solid #bbf7d0;border-top:4px solid #16a34a;border-radius:13px;padding:18px;background:#fbfffc}.exercise-card.grammar-card{border-color:#c4b5fd;border-top-color:#7c3aed;background:#fdfbff;margin-top:16px}.exercise-card h3{margin:0 0 12px;color:#166534;font-size:18px}.grammar-card h3{color:#6d28d9}.passage{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:15px;line-height:1.9}.answer-section{margin-top:26px;padding-top:22px;border-top:2px dashed #d9e1ee}.answer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(285px,1fr));gap:15px;margin-top:14px}.answer-card{border:1px solid #fde68a;border-top:4px solid #eab308;border-radius:13px;padding:16px;background:#fffdf2}.answer-card h4{margin:0 0 10px;color:#854d0e;font-size:17px}.answer-item{padding:8px 0;border-top:1px solid #fef3c7;line-height:1.55}.answer-item:first-of-type{border-top:0}.answer-number{display:inline-block;min-width:28px;color:#92400e;font-weight:700}.answer-explanation{display:block;margin:3px 0 0 28px;color:#667085;font-size:12px}.hint{color:#667085}@media print{body{background:#fff}.page{max-width:none;padding:10px}.exercise-card,.answer-card{break-inside:avoid}}@media(max-width:700px){.exercise-grid{grid-template-columns:1fr}}
+        </style></head><body><main class="page">${fillCardsHtml(data, false)}</main></body></html>`);
+      page.document.close();
+    }
+
+    function normalizeReinforcementData(raw, fallbackWord = '') {
+      const data = raw && typeof raw === 'object' ? raw : {};
+      const mnemonic = data.mnemonic && typeof data.mnemonic === 'object' ? data.mnemonic : {};
+      return {
+        word: String(data.word || fallbackWord),
+        phonetic: String(data.phonetic || ''),
+        partOfSpeech: String(data.partOfSpeech || ''),
+        meaning: String(data.meaning || ''),
+        examples: Array.isArray(data.examples) ? data.examples.map((item, index) => ({
+          type: String(item?.type || ['高考语境例句', '真题风格例句', '幽默助记例句'][index] || '例句'),
+          english: String(item?.english || ''),
+          chinese: String(item?.chinese || '')
+        })) : [],
+        collocations: Array.isArray(data.collocations) ? data.collocations.map(item => ({
+          phrase: String(item?.phrase || ''),
+          meaning: String(item?.meaning || '')
+        })) : [],
+        mnemonic: {
+          method: String(mnemonic.method || '联想助记'),
+          tip: String(mnemonic.tip || '')
+        },
+        examTip: String(data.examTip || '')
+      };
+    }
+
+    function reinforceCardsHtml(data) {
+      const examples = data.examples.map(item => `<article class="example-card">
+        <h4>${escapeHtml(item.type)}</h4>
+        <p class="example-en">${escapeHtml(item.english)}</p>
+        <p class="example-zh">${escapeHtml(item.chinese)}</p>
+      </article>`).join('');
+      const collocations = data.collocations.map(item => `<div class="collocation-item">
+        <strong>${escapeHtml(item.phrase)}</strong><span>${escapeHtml(item.meaning)}</span>
+      </div>`).join('');
+      return `<div class="reinforce-result">
+        <section class="word-hero">
+          <h2>${escapeHtml(data.word)}</h2>
+          <div class="word-meta">
+            ${data.phonetic ? `<span class="phonetic">[${escapeHtml(data.phonetic).replace(/^\[|\]$/g, '')}]</span>` : ''}
+            <span class="pos">${escapeHtml(data.partOfSpeech)}</span>
+          </div>
+          <p class="meaning-main">${escapeHtml(data.meaning)}</p>
+        </section>
+        <section class="roots-section">
+          <div class="roots-section-title"><h3>一、核心例句</h3><span class="count-badge">${data.examples.length}句</span></div>
+          <div class="example-grid">${examples || '<p class="hint">暂无例句。</p>'}</div>
+        </section>
+        <section class="roots-section">
+          <div class="roots-section-title"><h3>二、高频搭配与助记</h3></div>
+          <div class="reinforce-grid">
+            <article class="study-card">
+              <h4>高考高频搭配</h4>
+              <div class="collocation-list">${collocations || '<p class="hint">暂无搭配。</p>'}</div>
+            </article>
+            <article class="study-card memory-card">
+              <h4>助记小技巧</h4>
+              <span class="memory-method">${escapeHtml(data.mnemonic.method)}</span>
+              <p class="memory-tip">${escapeHtml(data.mnemonic.tip)}</p>
+            </article>
+          </div>
+          ${data.examTip ? `<div class="exam-tip"><strong>高考易错提醒：</strong>${escapeHtml(data.examTip)}</div>` : ''}
+        </section>
+      </div>`;
+    }
+
+    function reinforcementToText(data) {
+      const lines = [
+        `单词：${data.word} ${data.phonetic ? '[' + data.phonetic.replace(/^\[|\]$/g, '') + ']' : ''}`,
+        `词性：${data.partOfSpeech}`,
+        `核心词义：${data.meaning}`,
+        '',
+        '例句：'
+      ];
+      data.examples.forEach(item => {
+        lines.push(`【${item.type}】${item.english}`);
+        if (item.chinese) lines.push(`译文：${item.chinese}`);
+      });
+      lines.push('', '高频搭配：');
+      data.collocations.forEach(item => lines.push(`- ${item.phrase}：${item.meaning}`));
+      lines.push('', `助记方法：${data.mnemonic.method}`, `助记提示：${data.mnemonic.tip}`);
+      if (data.examTip) lines.push(`高考易错提醒：${data.examTip}`);
+      return lines.join('\n');
+    }
+
+    function renderReinforcementResult(data, fallbackWord) {
+      const normalized = normalizeReinforcementData(data, fallbackWord);
+      currentReinforcement = {
+        word: normalized.word || fallbackWord,
+        content: reinforcementToText(normalized),
+        data: normalized
+      };
+      $('wordPanelContent').innerHTML = reinforceCardsHtml(normalized);
+      $('wordPanelTitle').textContent = normalized.word + ' · 重点强化';
+    }
+
+    function openReinforcementPage(data) {
+      const page = window.open('', '_blank');
+      if (!page) throw new Error('浏览器阻止了新页面，请允许弹出窗口后重试。');
+      const safeTitle = escapeHtml(data.word + ' 薄弱词强化');
+      page.document.open();
+      page.document.write(`<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${safeTitle}</title>
+        <style>
+          *{box-sizing:border-box}body{margin:0;background:#f3f6fb;color:#172033;font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif}.page{max-width:1080px;margin:0 auto;padding:30px 20px 50px}.word-hero{padding:20px;border-radius:14px;background:linear-gradient(135deg,#eff6ff,#f5f3ff);border:1px solid #c7d2fe}.word-hero h2{margin:0;font-size:30px;color:#1e3a8a}.word-meta{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-top:8px}.phonetic{color:#475569}.pos{color:#7c3aed;font-size:12px;font-weight:700}.meaning-main{margin:10px 0 0;font-size:16px;line-height:1.6}.roots-section{margin-top:28px}.roots-section-title{display:flex;align-items:center;gap:9px;margin-bottom:14px}.roots-section-title h3{margin:0;font-size:20px}.count-badge{padding:3px 9px;border-radius:999px;background:#e8efff;color:#1e40af;font-size:12px;font-weight:700}.example-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}.example-card{padding:16px;border:1px solid #bfdbfe;border-top:4px solid #2563eb;border-radius:13px;background:#fbfdff}.example-card:nth-child(2){border-color:#c4b5fd;border-top-color:#7c3aed;background:#fdfbff}.example-card:nth-child(3){border-color:#fbcfe8;border-top-color:#db2777;background:#fffafd}.example-card h4{margin:0 0 10px;color:#1e40af;font-size:16px}.example-en{margin:0 0 7px;font:15px/1.7 Georgia,"Times New Roman",serif}.example-zh{margin:0;color:#667085;font-size:13px;line-height:1.6}.reinforce-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}.study-card{padding:17px;border:1px solid #d9e1ee;border-radius:13px;background:#fff}.study-card h4{margin:0 0 11px}.collocation-list{display:grid;gap:8px}.collocation-item{display:flex;justify-content:space-between;gap:12px;padding:9px 11px;border-radius:9px;background:#f8fafc}.collocation-item strong{color:#1d4ed8}.collocation-item span{color:#667085;text-align:right}.memory-card{border-color:#bbf7d0;background:#f7fff9}.memory-method{display:inline-block;margin-bottom:9px;padding:4px 9px;border-radius:999px;background:#dcfce7;color:#166534;font-size:12px;font-weight:700}.memory-tip{margin:0;line-height:1.7}.exam-tip{margin-top:14px;padding:12px 14px;border-left:4px solid #f59e0b;border-radius:8px;background:#fffbeb;line-height:1.6}@media print{body{background:#fff}.page{max-width:none;padding:10px}.example-card,.study-card{break-inside:avoid}}@media(max-width:760px){.example-grid,.reinforce-grid{grid-template-columns:1fr}}
+        </style></head><body><main class="page">${reinforceCardsHtml(data)}</main></body></html>`);
+      page.document.close();
+    }
+
+    function setWordPanelProgress(value) {
+      wordPanelProgress = Math.max(0, Math.min(100, value));
+      $('wordPanelBar').style.width = wordPanelProgress + '%';
+      $('wordPanelPercent').textContent = Math.round(wordPanelProgress) + '%';
+    }
+
+    function beginWordPanelProgress(word) {
+      clearInterval(wordPanelTimer);
+      wordPanelLoading = true;
+      $('wordPanel').classList.remove('hidden');
+      $('wordPanelTitle').textContent = word + ' · 正在强化';
+      $('wordPanelContent').innerHTML = '';
+      $('wordPanelProgress').classList.remove('hidden');
+      $('wordPanelProgressLabel').textContent = '正在生成例句、搭配和助记…';
+      $('reinforceActions').classList.add('hidden');
+      $('addWeakBtn').textContent = '加入薄弱词清单';
+      setWordPanelProgress(5);
+      wordPanelTimer = setInterval(() => {
+        if (wordPanelProgress < 85) setWordPanelProgress(wordPanelProgress + (wordPanelProgress < 45 ? 2 : 1));
+      }, 700);
+    }
+
+    function updateWordPanelProgress(content) {
+      const increase = Math.max(0.5, Math.min(4, String(content || '').length / 70));
+      if (wordPanelProgress < 94) setWordPanelProgress(Math.min(94, wordPanelProgress + increase));
+    }
+
+    async function finishWordPanelProgress() {
+      clearInterval(wordPanelTimer);
+      wordPanelTimer = null;
+      setWordPanelProgress(100);
+      await new Promise(resolve => setTimeout(resolve, 160));
+      $('wordPanelProgress').classList.add('hidden');
+    }
+
+    async function generateWordReinforcement(word) {
+      if (!word) return;
+      const key = String(word).toLowerCase();
+      const cached = reinforcementCache[key];
+      $('wordPanel').classList.remove('hidden');
+      $('addWeakBtn').textContent = weakWords.some(item => item.word.toLowerCase() === key)
+        ? '已加入薄弱词清单'
+        : '加入薄弱词清单';
+
+      if (cached) {
+        $('wordPanelProgress').classList.add('hidden');
+        renderReinforcementResult(cached, word);
+        $('reinforceActions').classList.remove('hidden');
+        return;
+      }
+
+      if (batchReinforceRunning) {
+        $('wordPanelTitle').textContent = word + ' · 尚未缓存';
+        $('wordPanelContent').innerHTML = '<p class="hint">全部单词正在后台生成。该词完成后再次点击即可立即打开；也可以等待批量任务完成。</p>';
+        $('reinforceActions').classList.add('hidden');
+        return;
+      }
+
+      if (wordPanelLoading) {
+        $('wordPanelProgressLabel').textContent = '当前单词仍在生成，请稍候…';
+        return;
+      }
+      beginWordPanelProgress(word);
+      try {
+        const jsonText = await callApi('/api/reinforce', {word}, updateWordPanelProgress);
+        let data;
+        try {
+          data = JSON.parse(cleanJsonText(jsonText));
+        } catch {
+          throw new Error('模型返回格式不正确，请重新点击该单词。');
+        }
+        await finishWordPanelProgress();
+        const normalized = normalizeReinforcementData(data, word);
+        reinforcementCache[key] = normalized;
+        refreshWordCacheStates();
+        saveSessionState();
+        renderReinforcementResult(normalized, word);
+        $('reinforceActions').classList.remove('hidden');
+      } catch (err) {
+        clearInterval(wordPanelTimer);
+        wordPanelTimer = null;
+        $('wordPanelProgress').classList.add('hidden');
+        $('wordPanelTitle').textContent = word + ' · 生成失败';
+        $('wordPanelContent').innerHTML = `<div class="status error">${escapeHtml(err.message || '生成失败，请重试。')}</div>`;
+      } finally {
+        wordPanelLoading = false;
+      }
+    }
+
+    function setProgress(value) {
+      progressValue = Math.max(0, Math.min(100, value));
+      $('progressBar').style.width = progressValue + '%';
+      $('progressPercent').textContent = Math.round(progressValue) + '%';
+    }
+
+    function beginProgress(label) {
+      clearInterval(progressTimer);
+      $('emptyResult').classList.add('hidden');
+      $('result').classList.add('hidden');
+      $('rootsResult').classList.add('hidden');
+      $('fillResult').classList.add('hidden');
+      $('rootsActions').classList.add('hidden');
+      $('fillActions').classList.add('hidden');
+      $('progressPanel').classList.remove('hidden');
+      $('progressLabel').textContent = label || '正在生成内容…';
+      setProgress(5);
+      progressTimer = setInterval(() => {
+        if (progressValue < 85) setProgress(progressValue + (progressValue < 45 ? 2 : 1));
+      }, 700);
+    }
+
+    function updateProgressFromChunk(content) {
+      const increase = Math.max(0.4, Math.min(3, String(content || '').length / 80));
+      if (progressValue < 94) setProgress(Math.min(94, progressValue + increase));
+    }
+
+    function stopProgress() {
+      clearInterval(progressTimer);
+      progressTimer = null;
+      $('progressPanel').classList.add('hidden');
+    }
+
+    async function finishProgress() {
+      clearInterval(progressTimer);
+      progressTimer = null;
+      setProgress(100);
+      await new Promise(resolve => setTimeout(resolve, 220));
+      $('progressPanel').classList.add('hidden');
+    }
+
+    function setStatus(el, message, type = '') {
+      el.textContent = message;
+      el.className = `status ${type}`;
+    }
+
+    function updateModuleCard(name) {
+      const state = moduleStates[name];
+      const badge = $(name + 'StateBadge');
+      const bar = $(name + 'MiniBar');
+      const labels = {
+        idle: '未生成',
+        generating: '生成中 ' + Math.round(state.progress) + '%',
+        done: '已完成',
+        error: '生成失败'
+      };
+      badge.textContent = labels[state.status] || '未生成';
+      badge.className = 'module-state-badge' + (state.status === 'idle' ? '' : ' ' + state.status);
+      bar.style.width = (state.status === 'done' ? 100 : state.progress) + '%';
+    }
+
+    function renderActiveModuleProgress() {
+      const state = moduleStates[activeModule];
+      if (state.status !== 'generating') return;
+      $('progressPanel').classList.remove('hidden');
+      $('progressLabel').textContent = state.message;
+      $('progressBar').style.width = state.progress + '%';
+      $('progressPercent').textContent = Math.round(state.progress) + '%';
+    }
+
+    function showModule(name) {
+      activeModule = name;
+      ['roots', 'fill'].forEach(moduleName => {
+        $(moduleName + 'Card').classList.toggle('active', moduleName === name);
+      });
+
+      $('emptyResult').classList.add('hidden');
+      $('result').classList.add('hidden');
+      $('progressPanel').classList.add('hidden');
+      $('rootsResult').classList.add('hidden');
+      $('fillResult').classList.add('hidden');
+      $('rootsActions').classList.add('hidden');
+      $('fillActions').classList.add('hidden');
+
+      const state = moduleStates[name];
+      setStatus($('resultStatus'), state.message, state.type);
+      if (state.status === 'generating') {
+        renderActiveModuleProgress();
+        return;
+      }
+      if (state.status === 'error' || state.status === 'idle') {
+        $('emptyResult').classList.remove('hidden');
+        $('emptyResult').textContent = state.status === 'error' ? state.message : state.message + ' 点击对应的生成按钮开始。';
+        return;
+      }
+      if (name === 'roots') {
+        $('rootsResult').classList.remove('hidden');
+        $('rootsActions').classList.remove('hidden');
+      } else {
+        $('fillResult').classList.remove('hidden');
+        $('fillActions').classList.remove('hidden');
+      }
+    }
+
+    function startModuleProgress(name, label) {
+      const state = moduleStates[name];
+      clearInterval(state.timer);
+      state.status = 'generating';
+      state.progress = 5;
+      state.message = label;
+      state.type = '';
+      updateModuleCard(name);
+      showModule(name);
+      state.timer = setInterval(() => {
+        if (state.progress < 85) {
+          state.progress = Math.min(85, state.progress + (state.progress < 45 ? 2 : 1));
+          updateModuleCard(name);
+          if (activeModule === name) renderActiveModuleProgress();
+        }
+      }, 700);
+    }
+
+    function updateModuleProgress(name, content) {
+      const state = moduleStates[name];
+      if (state.status !== 'generating') return;
+      const increase = Math.max(0.4, Math.min(3, String(content || '').length / 80));
+      state.progress = Math.min(94, state.progress + increase);
+      updateModuleCard(name);
+      if (activeModule === name) renderActiveModuleProgress();
+    }
+
+    async function finishModuleProgress(name) {
+      const state = moduleStates[name];
+      clearInterval(state.timer);
+      state.timer = null;
+      state.progress = 100;
+      updateModuleCard(name);
+      if (activeModule === name) renderActiveModuleProgress();
+      await new Promise(resolve => setTimeout(resolve, 180));
+    }
+
+    function completeModule(name, message) {
+      const state = moduleStates[name];
+      clearInterval(state.timer);
+      state.timer = null;
+      state.status = 'done';
+      state.progress = 100;
+      state.message = message;
+      state.type = 'ok';
+      updateModuleCard(name);
+      saveSessionState();
+      if (activeModule === name) showModule(name);
+    }
+
+    function failModule(name, message) {
+      const state = moduleStates[name];
+      clearInterval(state.timer);
+      state.timer = null;
+      state.status = 'error';
+      state.message = message;
+      state.type = 'error';
+      updateModuleCard(name);
+      if (activeModule === name) showModule(name);
+    }
+
+    function resetModules() {
+      const defaults = {
+        roots: '功能一尚未生成。',
+        fill: '功能二尚未生成。'
+      };
+      Object.entries(moduleStates).forEach(([name, state]) => {
+        clearInterval(state.timer);
+        state.timer = null;
+        state.status = 'idle';
+        state.progress = 0;
+        state.message = defaults[name];
+        state.type = '';
+        updateModuleCard(name);
+      });
+      currentRootsData = null;
+      currentFillData = null;
+      currentReinforcement = null;
+      showModule('roots');
+    }
+
+    function setResult(content, type = '') {
+      $('emptyResult').classList.add('hidden');
+      $('result').classList.remove('hidden');
+      $('result').textContent = content;
+      $('rootsResult').classList.add('hidden');
+      $('rootsActions').classList.add('hidden');
+      $('fillResult').classList.add('hidden');
+      $('fillActions').classList.toggle('hidden', type !== 'fill');
+    }
+
+    function setLoading(button, loading) {
+      button.disabled = loading;
+      button.dataset.originalText ||= button.textContent;
+      button.textContent = loading ? '生成中…' : button.dataset.originalText;
+    }
+
+    function beginStreamResult() {
+      $('emptyResult').classList.add('hidden');
+      $('result').classList.remove('hidden');
+      $('result').textContent = '';
+      $('rootsResult').classList.add('hidden');
+      $('fillResult').classList.add('hidden');
+      $('rootsActions').classList.add('hidden');
+      $('fillActions').classList.add('hidden');
+    }
+
+    function beginRootsResult() {
+      startModuleProgress('roots', '正在整理词根词族与易混词…');
+    }
+
+    function beginFillResult() {
+      startModuleProgress('fill', '正在生成两篇阅读与语法填空…');
+    }
+
+    function appendStreamChunk(content) {
+      $('result').append(document.createTextNode(content));
+    }
+
+    async function callApi(url, body, onDelta, timeoutMs = 190000) {
+      const controller = new AbortController();
+      let timer;
+      const resetTimer = () => {
+        clearTimeout(timer);
+        timer = setTimeout(() => controller.abort(), timeoutMs);
+      };
+      resetTimer();
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(body),
+          signal: controller.signal
+        });
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          throw new Error(data.error || `请求失败（${response.status}）`);
+        }
+        if (!response.body) throw new Error('当前浏览器不支持流式显示。');
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let buffer = '';
+        let content = '';
+        let completed = false;
+
+        while (true) {
+          const {done, value} = await reader.read();
+          if (done) break;
+          resetTimer();
+          buffer += decoder.decode(value, {stream: true});
+
+          let boundary;
+          while ((boundary = buffer.indexOf('\n\n')) >= 0) {
+            const block = buffer.slice(0, boundary);
+            buffer = buffer.slice(boundary + 2);
+            const jsonText = block.split('\n')
+              .filter(line => line.startsWith('data:'))
+              .map(line => line.slice(5).trimStart())
+              .join('\n');
+            if (!jsonText) continue;
+
+            const event = JSON.parse(jsonText);
+            if (event.type === 'delta' && event.content) {
+              content += event.content;
+              onDelta(event.content);
+            } else if (event.type === 'notice') {
+              setStatus($('resultStatus'), event.notice || '已自动切换备用模型。');
+            } else if (event.type === 'error') {
+              throw new Error(event.error || '模型生成失败。');
+            } else if (event.type === 'done') {
+              completed = true;
+            }
+          }
+        }
+
+        if (!completed && !content) throw new Error('模型没有返回可显示的内容。');
+        return content;
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          throw new Error('生成时间过长，已自动停止。请检查API配置或稍后重试。');
+        }
+        throw error;
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
+    function formatAssistantAnswer(text) {
+      const cleaned = String(text || '').replace(/```(?:markdown|text)?/gi, '').replace(/```/g, '').replace(/\*\*/g, '').trim();
+      if (!cleaned) return '<p>暂无回答。</p>';
+      return cleaned.split(/\r?\n/).map(line => {
+        const value = line.trim();
+        if (!value) return '';
+        if (/^#{1,4}\s+/.test(value)) return `<h4>${escapeHtml(value.replace(/^#{1,4}\s+/, ''))}</h4>`;
+        if (/^[-•]\s+/.test(value)) return `<div class="answer-list-item">• ${escapeHtml(value.replace(/^[-•]\s+/, ''))}</div>`;
+        if (/^\d+[.)、]\s+/.test(value)) return `<div class="answer-number-item">${escapeHtml(value)}</div>`;
+        return `<p>${escapeHtml(value)}</p>`;
+      }).filter(Boolean).join('');
+    }
+
+    $('assistantCollapseBtn').addEventListener('pointerdown', event => event.stopPropagation());
+    $('assistantCollapseBtn').addEventListener('click', event => {
+      event.stopPropagation();
+      const panel = $('assistantPanel');
+      const collapsed = panel.classList.toggle('collapsed');
+      $('assistantCollapseBtn').textContent = collapsed ? '+' : '−';
+      $('assistantCollapseBtn').title = collapsed ? '展开窗口' : '缩小窗口';
+      $('assistantCollapseBtn').setAttribute('aria-label', collapsed ? '展开窗口' : '缩小窗口');
+    });
+
+    let assistantPointerId = null;
+
+    $('assistantDragHandle').addEventListener('pointerdown', event => {
+      if (event.button !== 0) return;
+      const panel = $('assistantPanel');
+      const rect = panel.getBoundingClientRect();
+      assistantDragging = true;
+      assistantPointerId = event.pointerId;
+      assistantDragOffsetX = event.clientX - rect.left;
+      assistantDragOffsetY = event.clientY - rect.top;
+      $('assistantDragHandle').setPointerCapture?.(event.pointerId);
+      event.preventDefault();
+    });
+
+    document.addEventListener('pointermove', event => {
+      if (!assistantDragging || event.pointerId !== assistantPointerId) return;
+      const panel = $('assistantPanel');
+      const maxLeft = Math.max(8, window.innerWidth - panel.offsetWidth - 8);
+      const maxTop = Math.max(8, window.innerHeight - panel.offsetHeight - 8);
+      const left = Math.max(8, Math.min(maxLeft, event.clientX - assistantDragOffsetX));
+      const top = Math.max(8, Math.min(maxTop, event.clientY - assistantDragOffsetY));
+      panel.style.left = left + 'px';
+      panel.style.top = top + 'px';
+      panel.style.right = 'auto';
+      event.preventDefault();
+    });
+
+    const stopAssistantDrag = event => {
+      if (assistantPointerId !== null && event?.pointerId !== assistantPointerId) return;
+      assistantDragging = false;
+      assistantPointerId = null;
+    };
+    document.addEventListener('pointerup', stopAssistantDrag);
+    document.addEventListener('pointercancel', stopAssistantDrag);
+    window.addEventListener('blur', () => stopAssistantDrag());
+
+    $('assistantSendBtn').addEventListener('click', async () => {
+      const question = $('assistantQuestion').value.trim();
+      if (!question) {
+        $('assistantStatus').textContent = '请先输入一个课堂问题。';
+        return;
+      }
+      const button = $('assistantSendBtn');
+      const answer = $('assistantAnswer');
+      button.disabled = true;
+      button.textContent = '回答中…';
+      answer.classList.remove('hidden');
+      answer.innerHTML = '<p>正在整理回答…</p>';
+      $('assistantStatus').textContent = '正在生成回答…';
+      try {
+        const content = await callApi('/api/assistant', {question}, () => {}, 120000);
+        answer.innerHTML = formatAssistantAnswer(content);
+        currentAssistantQA = {question, answer: content};
+        $('assistantRecordBtn').classList.remove('hidden');
+        $('assistantRecordBtn').textContent = '加入课堂薄弱点';
+        $('assistantStatus').textContent = '回答完成。';
+      } catch (err) {
+        answer.innerHTML = `<p>${escapeHtml(err.message || '回答失败，请重试。')}</p>`;
+        $('assistantStatus').textContent = '回答失败。';
+      } finally {
+        button.disabled = false;
+        button.textContent = '发送问题';
+      }
+    });
+
+    $('assistantQuestion').addEventListener('keydown', event => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        event.preventDefault();
+        $('assistantSendBtn').click();
+      }
+    });
+
+    $('assistantRecordBtn').addEventListener('click', () => {
+      if (!currentAssistantQA) return;
+      const exists = classroomQA.some(item => item.question === currentAssistantQA.question && item.answer === currentAssistantQA.answer);
+      if (!exists) {
+        classroomQA.push(currentAssistantQA);
+        saveClassroomQA();
+      }
+      $('assistantRecordBtn').textContent = '已加入课堂薄弱点';
+      $('assistantStatus').textContent = '已记录到课堂薄弱点。';
+    });
+
+    $('generatePdfBtn').addEventListener('click', async () => {
+      if (!(weakWords.length || classroomQA.length)) return;
+      const button = $('generatePdfBtn');
+      button.disabled = true;
+      button.textContent = '正在生成PDF…';
+      try {
+        const response = await fetch('/api/weak-points-pdf', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({weakWords, classroomQA, title: '课堂薄弱点复习资料'})
+        });
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          throw new Error(data.error || `生成失败（${response.status}）`);
+        }
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = '课堂薄弱点复习资料.pdf';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        setStatus($('resultStatus'), err.message || 'PDF生成失败，请重试。', 'error');
+      } finally {
+        button.disabled = false;
+        button.textContent = '生成课堂薄弱点PDF';
+        updatePdfButton();
+      }
+    });
+
+    $('importBtn').addEventListener('click', () => {
+      const text = $('vocabulary').value.trim();
+      if (!text) {
+        setStatus($('importStatus'), '请先粘贴本单元全部词汇。', 'error');
+        return;
+      }
+      importedVocabulary = text;
+      unitWords = extractUnitWords(text);
+      reinforcementCache = {};
+      currentRootsData = null;
+      currentFillData = null;
+      Object.keys(moduleStates).forEach(name => {
+        moduleStates[name].status = 'idle';
+        moduleStates[name].progress = 0;
+        moduleStates[name].message = `功能${name === 'roots' ? '一' : '二'}尚未生成。`;
+        moduleStates[name].type = '';
+      });
+      batchReinforceRunning = false;
+      $('generateAllReinforceBtn').disabled = false;
+      $('generateAllReinforceBtn').textContent = '一键生成全部单词强化内容';
+      $('batchProgress').classList.add('hidden');
+      document.querySelectorAll('.feature-btn').forEach(btn => btn.disabled = false);
+      updateDashboardStats();
+      saveSessionState();
+      setStatus($('importStatus'), `已导入本单元词汇（${text.split(/\n+/).filter(Boolean).length}行）。`, 'ok');
+    });
+
+    $('generateAllReinforceBtn').addEventListener('click', generateAllReinforcements);
+
+    $('clearBtn').addEventListener('click', () => {
+      $('vocabulary').value = '';
+      importedVocabulary = '';
+      unitWords = [];
+      reinforcementCache = {};
+      batchReinforceRunning = false;
+      $('generateAllReinforceBtn').disabled = true;
+      $('generateAllReinforceBtn').textContent = '一键生成全部单词强化内容';
+      $('batchProgress').classList.add('hidden');
+      clearInterval(wordPanelTimer);
+      wordPanelTimer = null;
+      wordPanelLoading = false;
+      $('wordPanel').classList.add('hidden');
+      $('wordPanelContent').innerHTML = '';
+      document.querySelectorAll('.feature-btn').forEach(btn => btn.disabled = true);
+      updateDashboardStats();
+      setStatus($('importStatus'), '尚未导入词汇。');
+      $('emptyResult').classList.remove('hidden');
+      $('result').classList.add('hidden');
+      $('rootsResult').classList.add('hidden');
+      $('rootsResult').innerHTML = '';
+      $('fillResult').classList.add('hidden');
+      $('fillResult').innerHTML = '';
+      stopProgress();
+      resetModules();
+      saveSessionState();
+      $('rootsActions').classList.add('hidden');
+      $('fillActions').classList.add('hidden');
+    });
+
+    document.addEventListener('click', event => {
+      const wordTarget = event.target.closest('[data-word]');
+      if (!wordTarget) return;
+      event.preventDefault();
+      event.stopPropagation();
+      generateWordReinforcement(wordTarget.dataset.word);
+    });
+
+    $('closeWordPanelBtn').addEventListener('click', () => {
+      $('wordPanel').classList.add('hidden');
+    });
+    document.querySelectorAll('.feature-card[data-module]').forEach(card => {
+      card.addEventListener('click', () => showModule(card.dataset.module));
+    });
+
+    $('rootsBtn').addEventListener('click', async () => {
+      const btn = $('rootsBtn');
+      setLoading(btn, true); setStatus($('resultStatus'), '正在整理词根词族与易混词…');
+      try {
+        beginRootsResult();
+        const jsonText = await callApi('/api/roots', {vocabulary: importedVocabulary}, chunk => updateModuleProgress('roots', chunk));
+        let data;
+        try {
+          data = JSON.parse(cleanJsonText(jsonText));
+        } catch {
+          throw new Error('模型返回格式不正确，请重新生成。');
+        }
+        await finishModuleProgress('roots');
+        renderRootsResult(data);
+        completeModule('roots', '已生成卡片式整体辨析。');
+      } catch (err) {
+        failModule('roots', err.message || '功能一生成失败，请重试。');
+      } finally { setLoading(btn, false); }
+    });
+
+    $('fillBtn').addEventListener('click', async () => {
+      const topic = $('topic').value.trim();
+      if (!topic) { setStatus($('resultStatus'), '请输入挖词填空主题。', 'error'); return; }
+      const btn = $('fillBtn');
+      setLoading(btn, true); setStatus($('resultStatus'), '正在生成两篇阅读和语法填空…');
+      try {
+        beginFillResult();
+        const jsonText = await callApi('/api/fill', {vocabulary: importedVocabulary, topic}, chunk => updateModuleProgress('fill', chunk));
+        let data;
+        try {
+          data = JSON.parse(cleanJsonText(jsonText));
+        } catch {
+          throw new Error('模型返回格式不正确，请重新生成。');
+        }
+        await finishModuleProgress('fill');
+        renderFillResult(data);
+        completeModule('fill', '已生成卡片式课堂练习，答案默认隐藏。');
+      } catch (err) {
+        failModule('fill', err.message || '功能二生成失败，请重试。');
+      } finally { setLoading(btn, false); }
+    });
+
+    $('addWeakBtn').addEventListener('click', () => {
+      if (!currentReinforcement) return;
+      const index = weakWords.findIndex(item => item.word.toLowerCase() === currentReinforcement.word.toLowerCase());
+      if (index >= 0) weakWords[index] = currentReinforcement;
+      else weakWords.push(currentReinforcement);
+      saveWeakWords();
+      $('addWeakBtn').textContent = '已加入薄弱词清单';
+      setStatus($('resultStatus'), `已将 ${currentReinforcement.word} 加入薄弱词清单。`, 'ok');
+    });
+
+    $('openReinforceBtn').addEventListener('click', () => {
+      if (!currentReinforcement?.data) return;
+      try {
+        openReinforcementPage(currentReinforcement.data);
+      } catch (err) {
+        setStatus($('resultStatus'), err.message, 'error');
+      }
+    });
+
+    $('copyReinforceBtn').addEventListener('click', async () => {
+      if (!currentReinforcement) return;
+      try {
+        await navigator.clipboard.writeText(currentReinforcement.content);
+        setStatus($('resultStatus'), '已复制当前强化内容。', 'ok');
+      } catch {
+        setStatus($('resultStatus'), '复制失败，请手动选择文本复制。', 'error');
+      }
+    });
+
+
+    $('clearWeakBtn').addEventListener('click', () => {
+      if (!weakWords.length) return;
+      if (!confirm('确定清空本单元薄弱词清单吗？')) return;
+      weakWords = [];
+      saveWeakWords();
+    });
+
+    $('clearQABtn').addEventListener('click', () => {
+      if (!classroomQA.length) return;
+      if (!confirm('确定清空已记录的课堂提问吗？')) return;
+      classroomQA = [];
+      saveClassroomQA();
+    });
+
+    $('openRootsBtn').addEventListener('click', () => {
+      if (!currentRootsData) return;
+      try {
+        openRootsPage(currentRootsData);
+      } catch (err) {
+        setStatus($('resultStatus'), err.message, 'error');
+      }
+    });
+
+    $('toggleAnswersBtn').addEventListener('click', () => {
+      const answers = $('fillAnswers');
+      if (!answers) return;
+      const willShow = answers.classList.contains('hidden');
+      answers.classList.toggle('hidden', !willShow);
+      $('toggleAnswersBtn').textContent = willShow ? '隐藏答案' : '显示答案';
+    });
+
+    $('openFillBtn').addEventListener('click', () => {
+      if (!currentFillData) return;
+      try {
+        openFillPage(currentFillData);
+      } catch (err) {
+        setStatus($('resultStatus'), err.message, 'error');
+      }
+    });
+
+    $('copyResultBtn').addEventListener('click', async () => {
+      const text = !$('fillResult').classList.contains('hidden')
+        ? $('fillResult').textContent.trim()
+        : $('result').textContent;
+      try {
+        await navigator.clipboard.writeText(text);
+        setStatus($('resultStatus'), '已复制当前结果。', 'ok');
+      } catch { setStatus($('resultStatus'), '复制失败，请手动选择文本复制。', 'error'); }
+    });
+
+    renderWeakList();
+    renderClassroomQA();
+    updateDashboardStats();
+    restoreSessionState();
+    Object.keys(moduleStates).forEach(updateModuleCard);
+    showModule(currentRootsData ? 'roots' : (currentFillData ? 'fill' : 'roots'));
+  </script>
+</body>
+</html>
